@@ -1,0 +1,33 @@
+﻿@model IEnumerable<Memez.Models.Meme>
+
+@{
+    ViewData["Title"] = "Home Page";
+
+
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+<div class="container">
+    <div class="main-wrap">
+@foreach(var item in Model) {
+    <div>
+        <div>
+            @Html.DisplayFor(modelItem => item.Title)
+        </div>
+        <div>
+            <img src="images\@item.ImagePath" alt="@item.ImagePath">
+        </div>
+    </div>
+    <div>
+@*    @using (Html.BeginForm("Create", "VotesController", )
+    {
+        <input type="number" name="" value="@item.Id" disabled hidden />
+        <input type="submit" name="" />
+    }*@
+    </div>
+}
+    </div>
+</div>
