@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Memez.Areas.Identity.Data;
 
 namespace Memez.Models
 {
@@ -11,5 +12,7 @@ namespace Memez.Models
         public string? Title { get; set; }
         public string? ImagePath { get; set; }
         public DateTime Timestamp { get; set; }
+        public MemezUser MemezUser { get; set; }
+        public int VotesSum { get; set; }
     }
 }

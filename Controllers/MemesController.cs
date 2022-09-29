@@ -1,41 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Memez.Data;
 using Memez.Models;
 using Memez.Images;
+using Memez.Areas.Identity.Data;
 
 namespace Memez.Controllers
 {
     public class MemesController : Controller
     {
         private readonly MemezContext _context;
+        private readonly UserManager<MemezUser> _userManager;
 
-        public MemesController(MemezContext context)
+        public MemesController(MemezContext context, UserManager<MemezUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Memes
         public async Task<IActionResult> Index()
         {
-            var memezContext = _context.Meme;
+            var memezContext = _context.Memes;
             return View(await memezContext.ToListAsync());
         }
 
         // GET: Memes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Meme == null)
+            if (id == null || _context.Memes == null)
             {
                 return NotFound();
             }
 
-            var meme = await _context.Meme.FirstOrDefaultAsync(m => m.Id == id);
+            var meme = await _context.Memes.FirstOrDefaultAsync(m => m.Id == id);
             if (meme == null)
             {
                 return NotFound();
@@ -45,6 +45,7 @@ namespace Memez.Controllers
         }
 
         // GET: Memes/Create
+        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -55,14 +56,18 @@ namespace Memez.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,AccountId")] Meme meme, IFormFile formFile)
+        [Authorize]
+        public async Task<IActionResult> Create([Bind("Id,Title")] Meme meme, IFormFile formFile)
         {
             meme.ImagePath = "";
             meme.Timestamp = DateTime.Now;
-            if (!ModelState.IsValid || formFile.Length <= 0)
+            MemezUser user = await _userManager.FindByEmailAsync(User.Identity.Name);
+            meme.MemezUser = user;
+            ModelState.ClearValidationState(nameof(Meme));
+/*            if (!TryValidateModel(meme, nameof(Meme)) || formFile.Length <= 0)
             {
                 return View(meme);
-            }
+            }*/
             // TODO: Walidacja memow.
             _context.Add(meme);
             await _context.SaveChangesAsync();
@@ -76,12 +81,12 @@ namespace Memez.Controllers
         // GET: Memes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Meme == null)
+            if (id == null || _context.Memes == null)
             {
                 return NotFound();
             }
 
-            var meme = await _context.Meme.FindAsync(id);
+            var meme = await _context.Memes.FindAsync(id);
             if (meme == null)
             {
                 return NotFound();
@@ -127,12 +132,12 @@ namespace Memez.Controllers
         // GET: Memes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Meme == null)
+            if (id == null || _context.Memes == null)
             {
                 return NotFound();
             }
 
-            var meme = await _context.Meme.FirstOrDefaultAsync(m => m.Id == id);
+            var meme = await _context.Memes.FirstOrDefaultAsync(m => m.Id == id);
             if (meme == null)
             {
                 return NotFound();
@@ -146,14 +151,14 @@ namespace Memez.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Meme == null)
+            if (_context.Memes == null)
             {
                 return Problem("Entity set 'MemezContext.Meme'  is null.");
             }
-            var meme = await _context.Meme.FindAsync(id);
+            var meme = await _context.Memes.FindAsync(id);
             if (meme != null)
             {
-                _context.Meme.Remove(meme);
+                _context.Memes.Remove(meme);
             }
             
             await _context.SaveChangesAsync();
@@ -162,7 +167,7 @@ namespace Memez.Controllers
 
         private bool MemeExists(int id)
         {
-          return (_context.Meme?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.Memes?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

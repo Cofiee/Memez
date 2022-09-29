@@ -2,8 +2,6 @@
 
 @{
     ViewData["Title"] = "Home Page";
-
-
 }
 
 <div class="text-center">
@@ -19,6 +17,9 @@
         </div>
         <div>
             <img src="images\@item.ImagePath" alt="@item.ImagePath">
+        </div>
+        <div>
+            Author: @Html.DisplayFor(modelItem => item.MemezUser.UserName)
         </div>
     </div>
     <div>

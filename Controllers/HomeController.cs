@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Memez.Models;
 using Memez.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Memez.Controllers
 {
@@ -19,7 +20,10 @@ namespace Memez.Controllers
         public IActionResult Index(int page = 0)
         {
             page *= 9;
-            var memezContext = _context.Meme.OrderByDescending(c => c.Timestamp).Skip(page).Take(9);
+            var memezContext = _context.Memes.OrderByDescending(m => m.Timestamp)
+                .Skip(page)
+                .Take(9)
+                .Include(m => m.MemezUser);
             return View(memezContext.ToList());
         }
 
