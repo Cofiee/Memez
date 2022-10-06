@@ -41,7 +41,7 @@ namespace Memez.Controllers
             meme.VotesSum += 1;
             _context.Add(vote);
             await _context.SaveChangesAsync();
-            return View();
+            return Ok();
         }
 
         [HttpDelete]
@@ -51,7 +51,7 @@ namespace Memez.Controllers
         {
             if (_context.Memes == null || _context.Votes == null)
             {
-                return Problem("Entity set 'MemezContext.Meme' or 'Votes'  is null.");
+                return Problem("Entity set 'MemezContext.Meme' or 'Votes' is null.");
             }
             Vote? vote = await _context.Votes.FindAsync(voteId);
             if (vote == null)
@@ -59,13 +59,14 @@ namespace Memez.Controllers
                 return NotFound();
             }
             Meme? meme = await _context.Memes.FindAsync(vote.Meme);
-            if (meme != null)
+            if (meme == null)
             {
-                meme.VotesSum -= 1;
+                return NotFound();
             }
+            meme.VotesSum -= 1;
             _context.Votes.Remove(vote);
             await _context.SaveChangesAsync();
-            return View();
+            return Ok();
         }
     }
 }
