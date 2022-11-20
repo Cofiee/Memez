@@ -19,10 +19,11 @@ namespace Memez.Controllers
 
         public IActionResult Index(int page = 0)
         {
-            page *= 9;
+            int memesPerPage = 9;
+            page *= memesPerPage;
             var memezContext = _context.Memes.OrderByDescending(m => m.Timestamp)
                 .Skip(page)
-                .Take(9)
+                .Take(memesPerPage)
                 .Include(m => m.MemezUser);
             return View(memezContext.ToList());
         }

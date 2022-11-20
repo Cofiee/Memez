@@ -71,7 +71,7 @@ namespace Memez.Controllers
             // TODO: Walidacja memow.
             _context.Add(meme);
             await _context.SaveChangesAsync();
-            BaseImageManager imageManager = new BaseImageManager("wwwroot/images");
+            BaseImageManager imageManager = new BaseImageManager("wwwroot/images/memes");
             string imagePath = imageManager.Save(formFile, meme.Id);
             meme.ImagePath = imagePath;
             await _context.SaveChangesAsync();

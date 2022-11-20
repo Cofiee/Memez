@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Memez.Areas.Identity.Data;
@@ -19,11 +19,12 @@ namespace Memez.Controllers
             _userManager = userManager;
         }
 
-        //POST: Votes/Create
+        //POST: Votes/Create/{memeId}
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Route("Votes/Create/{memeId}")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken] // TODO: Fix antiforgery token
         [Authorize]
         public async Task<IActionResult> Create(int memeId)
         {
@@ -31,27 +32,33 @@ namespace Memez.Controllers
             {
                 return Problem("Entity set 'MemezContext.Meme' or 'Votes'  is null.");
             }
-            MemezUser user = await _userManager.FindByEmailAsync(User.Identity.Name);
             Meme? meme = await _context.Memes.FindAsync(memeId);
             if (meme == null)
             {
                 return NotFound();
             }
-            Vote vote = new Vote();
-            meme.VotesSum += 1;
+            MemezUser user = await _userManager.FindByEmailAsync(User.Identity.Name);
+            Vote? vote = await _context.Votes.Where(v => v.Meme.Id == memeId && v.MemezUser.Equals(user)).FirstAsync();
+            if (vote != null)
+            {
+                return BadRequest("Meme is already liked"); // TODO: find something more suitable
+            }
+            vote = new Vote() { MemezUser = user, Meme = meme };
             _context.Add(vote);
+            meme.VotesSum += 1;
+            _context.Update(meme);
             await _context.SaveChangesAsync();
             return Ok();
         }
 
         [HttpDelete]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken] // TODO: Fix antiforgery token
         [Authorize]
         public async Task<IActionResult> Delete(int voteId)
         {
             if (_context.Memes == null || _context.Votes == null)
             {
-                return Problem("Entity set 'MemezContext.Meme' or 'Votes' is null.");
+                return Problem("Entity set 'MemezContext.Meme' or 'MemezContext.Votes' is null.");
             }
             Vote? vote = await _context.Votes.FindAsync(voteId);
             if (vote == null)

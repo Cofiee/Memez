@@ -11,30 +11,48 @@
 <div class="container">
     <div class="main-wrap">
 @foreach(var item in Model) {
-    <div>
         <div>
-            @Html.DisplayFor(modelItem => item.Title)
-        </div>
-        <div>
-            <img src="images\@item.ImagePath" alt="@item.ImagePath">
-        </div>
-        <div>
-            Author: @Html.DisplayFor(modelItem => item.MemezUser.UserName)
-        </div>
-        <div>
-            Likes: @Html.DisplayFor(modelItem => item.VotesSum);
-            <button type="button" onclick="location.href='@Url.Action("Create", "VotesController")'">
+            <div>
+                @Html.DisplayFor(modelItem => item.Title)
+            </div>
+            <div>
+                <img src="images\@item.ImagePath" alt="@item.ImagePath">
+            </div>
+            <div>
+                Author: @Html.DisplayFor(modelItem => item.MemezUser.UserName)
+            </div>
+            <div>
+                Likes: <span id="likes_@item.Id">@Html.DisplayFor(modelItem => item.VotesSum)</span>
+            </div>
+            <button onclick="likeMeme(@item.Id)">
                 <img src="~/images/icons/like_black.png" width="50px" height="50px" />
             </button>
         </div>
-    </div>
-    <div>
-@*    @using (Html.BeginForm("Create", "VotesController", )
-    {
-        <input type="number" name="" value="@item.Id" disabled hidden />
-        <input type="submit" name="" />
-    }*@
-    </div>
 }
     </div>
 </div>
+
+@section Scripts {
+<script>
+console.info("Scripts loaded");
+function likeMeme(memeId) {
+    let url = "@Url.Action("Create", "Votes")" + `/${memeId}`;
+    $.ajax({
+        type: "POST",
+        url: url,
+        success: function(result) {
+            incrementLikesCounter(memeId);
+        },
+        error: function(error) {
+            console.error(error);
+        }
+    });
+}
+
+function incrementLikesCounter(memeId) {
+    const likesCounter = $(`#likes_${memeId}`);
+    let newLikesCount = Number(likesCounter.text()) + 1;
+    likesCounter.text(newLikesCount);
+}
+</script>
+}
