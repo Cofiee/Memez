@@ -165,6 +165,29 @@ namespace Memez.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet, ActionName("IsMemeLiked")]
+        [Authorize]
+        public async Task<IActionResult> IsMemeLiked(int id)
+        {
+            if (_context.Memes == null && _context.Votes == null)
+            {
+                return Problem("Entity set 'MemezContext.Meme'  or 'MemezContext.Vote' is null.");
+            }
+            Meme? meme = await _context.Memes.FindAsync(id);
+            if (meme == null)
+            {
+                return NotFound();
+            }
+            MemezUser user = await _userManager.FindByEmailAsync(User.Identity.Name);
+            Vote? vote = await _context.Votes.Where(v => v.Meme.Id == id && v.MemezUser.Equals(user)).FirstAsync();
+            if (vote == null)
+            {
+                return Json(new { success = false });
+            }
+
+            return Json(new { success = true });
+        }
+
         private bool MemeExists(int id)
         {
           return (_context.Memes?.Any(e => e.Id == id)).GetValueOrDefault();

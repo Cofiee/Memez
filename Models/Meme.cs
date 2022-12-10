@@ -13,7 +13,6 @@ namespace Memez.Models
         [Required]
         public string? Title { get; set; }
 
-        [NotMapped]
         public string? ImagePath { get; set; }
 
         //TODO: use [Timestamp] annotation
